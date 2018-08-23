@@ -1,0 +1,14 @@
+# TBS
+57 17 * * 1-5 radiko_docker_run.sh TBS 184 /home/sankaku/radiko アフター6ジャンクション
+# ニッポン放送
+55 0 * * 3 radiko_docker_run.sh LFR 126 /home/sankaku/radiko 星野源のオールナイトニッポン
+# 文化放送
+55 17 * * 0 radiko_docker_run.sh QRR 36 /home/sankaku/radiko 乃木坂のの
+# TOKYO FM
+55 1 * * 5 radiko_docker_run.sh FMT 126 /home/sankaku/radiko RadioDragonNext
+# NHK1
+4  10 * * 6 radiko_docker_run.sh JOAK 52 /home/sankaku/radiko 真打ち共演
+# NHK2
+14 12 * * 6 radiko_docker_run.sh JOAB 27 /home/sankaku/radiko ボキャブライダー
+# NHK-FM
+19 19 * * 6 radiko_docker_run.sh JOAK-FM 103 /home/sankaku/radiko N響レジェンド
