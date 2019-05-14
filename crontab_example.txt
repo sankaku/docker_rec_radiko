@@ -9,6 +9,6 @@
 # NHK1
 4  10 * * 6 radiko_docker_run.sh JOAK 52 /home/sankaku/radiko 真打ち共演
 # NHK2
-14 12 * * 6 radiko_docker_run.sh JOAB 27 /home/sankaku/radiko ボキャブライダー
+14 12 * * 6 nhk_docker_run.sh NHK2 27 /home/sankaku/radiko ボキャブライダー
 # NHK-FM
 19 19 * * 6 radiko_docker_run.sh JOAK-FM 103 /home/sankaku/radiko N響レジェンド
