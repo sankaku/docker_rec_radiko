@@ -1,55 +1,55 @@
 # docker_rec_radiko
-[rec_radiko.sh](https://gist.github.com/matchy2/3956266)と[rec_nhk.sh](https://gist.github.com/matchy2/5310409)の力を借りて[radiko.jp](http://radiko.jp)を録音する。
+[radiko.jp](http://radiko.jp) recorder with docker and the great power of [rec_radiko.sh](https://gist.github.com/matchy2/3956266) and [rec_nhk.sh](https://gist.github.com/matchy2/5310409).
 
-## 必要なもの
+## Requirements
 + Docker
-+ 場所(日本)
++ Location(Japan)
 
-## 準備
+## Preparation
 
 ```sh
 $ docker build . -t docker_rec_radiko
 ```
 
-## 使い方
+## Usage
 
 ```sh
-$ ./radiko_docker_run.sh <放送局ID> <録音時間(分)> <保存先ディレクトリのホスト側パス> <ファイルプレフィクス>
+$ ./radiko_docker_run.sh <STATION_ID> <DURATION_IN_MINUTES> <DIRECTORY_PATH_ON_HOST> <FILENAME_PREFIX>
 ```
 
-### crontabの例
+### crontab example
 [crontab_example.txt](./crontab_example.txt)
 
-## Fargateで動かす場合...
-1. DockerイメージをECRにpush  
-  [通常の手順](https://docs.aws.amazon.com/ja_jp/AmazonECR/latest/userguide/docker-push-ecr-image.html)に従う。
+## If you want to run on Fargate...
+1. Push the Docker image to ECR  
+  Please follow [the standard procedure](https://docs.aws.amazon.com/en_pv/AmazonECR/latest/userguide/docker-push-ecr-image.html).
 
     ```sh
     $ aws ecr create-repository --repository-name <REPOSITORY_NAME>
-    # (前のコマンドで<repositoryUri>が取得できている)
+    # (You'll have gotten the <repositoryUri> by the previous command)
     $ docker build . -t <repositoryUri>
     $ aws ecr get-login --no-include-email
-    # 前のコマンドで出力された文字列をそのまま実行してログインする
+    # Please log in just by executing the output string of the previous command
     $ docker push <repositoryUri>
     ```
-2. ロールとネットワークのCloudFormationスタックを作成  
+2. Create roles & network stacks on CloudFormation  
     ```sh
     $ aws cloudformation create-stack --stack-name docker-rec-radiko-roles-stack --template-body file://./cf/roles.yaml --capabilities CAPABILITY_NAMED_IAM
     $ aws cloudformation create-stack --stack-name docker-rec-radiko-network-stack --template-body file://./cf/network.yaml
     ```
-3. ECSクラスタのCloudFormationスタックを作成  
-  ロールとネットワークのスタックが作成完了してから実行する。
+3. Create ECS cluster stack on CloudFormation  
+  Execute after the roles & network stacks are created.
     ```sh
     $ aws cloudformation create-stack --stack-name docker-rec-radiko-cluster-stack --template-body file://./cf/cluster.yaml
     ```
-4. タスクのCloudFormationスタックを作成  
-  ECSクラスタのスタックが作成完了してから実行する。  
+4. Create task stack(s) on CloudFormation  
+  Execute after the ECS cluster stack is created.  
 
-  `cf/tasks/mytask.yaml` を自作する。  
-  テンプレートは `cf/task.template.yaml` 。 以下のパラメータを修正すればいい:
+  Please write your `cf/tasks/mytask.yaml`.  
+  The template file is `cf/task.template.yaml`. All you have to do is to modify these parameters:
   - ECSCommand
   - ECSTaskSchedulerPattern  
-    **UTCで書くこと**
+    **Specify in UTC**
   - ECSTaskName
   - ImageName
   - S3BucketName
@@ -57,7 +57,7 @@ $ ./radiko_docker_run.sh <放送局ID> <録音時間(分)> <保存先ディレ�
   - [optional] ECSTaskMemory
     ```sh
     $ aws cloudformation create-stack --stack-name docker-rec-radiko-task-stack --template-body file://./cf/tasks/mytask.yaml
-    # 複数のタスクを一度に作成する場合はこんなふうにする
+    # Execute like this if you create several tasks at once
     $ for f in `ls ./cf/tasks/`; do aws cloudformation create-stack --stack-name docker-rec-radiko-task-stack-`echo $f | sed "s/\..*$//"` --template-body file://./cf/tasks/$f; done
     ```
 

@@ -1,0 +1,89 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description:
+  "Roles settings for docker_rec_radiko with Fargate"
+
+Parameters:
+  ProjectName:
+    Default: docker_rec_radiko_with_fargate
+    Type: String
+
+Resources:
+  FargateLauncherRole:
+    # https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "lambda.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: !Sub "${ProjectName}-FargateLauncherRole"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+                Effect: "Allow"
+                Action:
+                  - "ecs:RunTask"
+                  - "iam:PassRole"
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
+
+  SSMFargateLauncherRole:
+    # https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-resource-ssm-parameter.html
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${ProjectName}/SSMFargateLauncherRole"
+      Type: String
+      Value: !GetAtt FargateLauncherRole.Arn
+
+  ECSTaskExecutorRole:
+    # https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html
+    Type: AWS::IAM::Role
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+      Policies:
+        -
+          PolicyName: !Sub "${ProjectName}-FargateLauncherRole"
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+                Effect: "Allow"
+                Action:
+                  - "ecr:GetAuthorizationToken"
+                  - "ecr:BatchCheckLayerAvailability"
+                  - "ecr:GetDownloadUrlForLayer"
+                  - "ecr:BatchGetImage"
+                  - "s3:PutObject"
+                  - "ssm:GetParameters"
+                  - "secretsmanager:GetSecretValue"
+                  - "logs:CreateLogGroup"
+                  - "logs:CreateLogStream"
+                  - "logs:PutLogEvents"
+                Resource: "*"
+
+  SSMECSTaskExecutorRole:
+    # https://docs.aws.amazon.com/ja_jp/AWSCloudFormation/latest/UserGuide/aws-resource-ssm-parameter.html
+    Type: AWS::SSM::Parameter
+    Properties:
+      Name: !Sub "/${ProjectName}/SSMECSTaskExecutorRole"
+      Type: String
+      Value: !GetAtt ECSTaskExecutorRole.Arn
+
