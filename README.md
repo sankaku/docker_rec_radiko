@@ -1,5 +1,5 @@
 # docker_rec_radiko
-[rec_radiko.sh](https://gist.github.com/matchy2/3956266)と[rec_nhk.sh](https://gist.github.com/matchy2/5310409)の力を借りて[radiko.jp](http://radiko.jp)を録音する。
+[rec_radiko.sh](https://gist.github.com/matchy256/3956266)と[rec_nhk.sh](https://gist.github.com/matchy256/5310409)の力を借りて[radiko.jp](http://radiko.jp)を録音する。
 
 ## 必要なもの
 + Docker
@@ -63,8 +63,8 @@ $ ./radiko_docker_run.sh <放送局ID> <録音時間(分)> <保存先ディレ�
 
 
 ## Acknowledgements
-+ [matchy2/rec_radiko.sh](https://gist.github.com/matchy2/3956266)
-+ [matchy2/rec_nhk.sh](https://gist.github.com/matchy2/5310409)
++ [matchy256/rec_radiko.sh](https://gist.github.com/matchy256/3956266)
++ [matchy256/rec_nhk.sh](https://gist.github.com/matchy256/5310409)
 
 ## License
 MIT License
