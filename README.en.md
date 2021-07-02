@@ -1,5 +1,5 @@
 # docker_rec_radiko
-[radiko.jp](http://radiko.jp) recorder with docker and the great power of [rec_radiko.sh](https://gist.github.com/matchy2/3956266) and [rec_nhk.sh](https://gist.github.com/matchy2/5310409).
+[radiko.jp](http://radiko.jp) recorder with docker and the great power of [rec_radiko.sh](https://gist.github.com/matchy256/3956266) and [rec_nhk.sh](https://gist.github.com/matchy256/5310409).
 
 ## Requirements
 + Docker
@@ -63,8 +63,8 @@ $ ./radiko_docker_run.sh <STATION_ID> <DURATION_IN_MINUTES> <DIRECTORY_PATH_ON_H
 
 
 ## Acknowledgements
-+ [matchy2/rec_radiko.sh](https://gist.github.com/matchy2/3956266)
-+ [matchy2/rec_nhk.sh](https://gist.github.com/matchy2/5310409)
++ [matchy256/rec_radiko.sh](https://gist.github.com/matchy256/3956266)
++ [matchy256/rec_nhk.sh](https://gist.github.com/matchy256/5310409)
 
 ## License
 MIT License

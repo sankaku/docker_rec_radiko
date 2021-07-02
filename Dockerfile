@@ -12,8 +12,8 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     locales-all
 
 # Download scripts. Though these files will be overwritten in run.sh, keep here in case they can't be downloaded at runtime.
-ADD https://gist.githubusercontent.com/matchy2/3956266/raw/rec_radiko.sh /usr/local/bin/
-ADD https://gist.githubusercontent.com/matchy2/9515cecbea40918add594203dc61406c/raw/rec_nhk.sh /usr/local/bin/
+ADD https://gist.githubusercontent.com/matchy256/3956266/raw/rec_radiko.sh /usr/local/bin/
+ADD https://gist.githubusercontent.com/matchy256/9515cecbea40918add594203dc61406c/raw/rec_nhk.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/rec_radiko.sh /usr/local/bin/rec_nhk.sh
 
 ADD ./run.sh /usr/local/bin/
