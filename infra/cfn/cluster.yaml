@@ -1,0 +1,30 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "ECS cluster for docker_rec_radiko_with_fargate"
+
+Parameters:
+  ProjectName:
+    Type: String
+  ECSClusterName:
+    Default: ecs-cluster
+    Type: String
+
+Resources:
+  ECSCluster:
+    # [AWS::ECS::Cluster - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-cluster.html)
+    Type: AWS::ECS::Cluster
+    Properties:
+      ClusterName: !Sub "${ProjectName}-${ECSClusterName}"
+
+Outputs:
+
+  OutputECSClusterArn:
+    Description: ARN of ECS Cluster
+    Value: !GetAtt ECSCluster.Arn
+    Export:
+      Name: !Sub "${ProjectName}-ECSClusterArn"
+  OutputECSClusterName:
+    Description: Name of ECS Cluster
+    Value: !Ref ECSCluster
+    Export:
+      Name: !Sub "${ProjectName}-ECSClusterName"
+

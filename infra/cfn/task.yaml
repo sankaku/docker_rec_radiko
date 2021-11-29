@@ -1,0 +1,109 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "ECS task for docker_rec_radiko_with_fargate"
+
+Parameters:
+
+  ProjectName:
+    Type: String
+  ECSCommandArgs:
+    Type: String
+  ECSTaskSchedulerPattern:
+    Type: String
+  ECSTaskName:
+    Type: String
+  ImageVersion:
+    Type: String
+  S3BucketName:
+    Type: String
+
+  ECSTaskCpu:
+    Type: Number
+    Default: 256
+  ECSTaskMemory:
+    Type: Number
+    Default: 512
+  FargatePlatformVersion:
+    Type: String
+    Default: LATEST
+  ECSTaskCount:
+    Type: Number
+    Default: 1
+  LogRetentionInDays:
+    Type: Number
+    Default: 30
+  ECSTaskWorkingDirectory:
+    Type: String
+    Default: "/recorded"
+
+Resources:
+  ECSTaskDefinition:
+    # [AWS::ECS::TaskDefinition - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-taskdefinition.html)
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Cpu: !Ref ECSTaskCpu
+      Memory: !Ref ECSTaskMemory
+      ExecutionRoleArn: {"Fn::ImportValue": !Sub "${ProjectName}-FargateExecutorRoleArn"}
+      TaskRoleArn: {"Fn::ImportValue": !Sub "${ProjectName}-ECSTaskRoleArn"}
+      NetworkMode: awsvpc
+      RequiresCompatibilities:
+        - FARGATE
+      ContainerDefinitions:
+        # [AWS::ECS::TaskDefinition ContainerDefinition - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ecs-taskdefinition-containerdefinitions.html)
+        -
+          Command: !Split [",", !Sub "run_fargate.sh, ${ECSCommandArgs}"]
+          # Cpu: !Ref ECSTaskCpu
+          # Memory: !Ref ECSTaskMemory
+          Image: !Sub
+            - "${RepositoryUri}:${ImageVersion}"
+            - RepositoryUri: {"Fn::ImportValue": !Sub "${ProjectName}-ECRRepositoryUri"}
+          Name: !Sub "${ProjectName}-${ECSTaskName}-container"
+          WorkingDirectory: !Ref ECSTaskWorkingDirectory
+          Environment:
+            -
+              Name: BucketName
+              Value: !Ref S3BucketName
+          LogConfiguration:
+            # [AWS::ECS::TaskDefinition LogConfiguration - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ecs-taskdefinition-containerdefinitions-logconfiguration.html)
+            LogDriver: awslogs
+            Options:
+              awslogs-group: !Ref ECSLogGroup
+              awslogs-region: !Ref "AWS::Region"
+              awslogs-stream-prefix: !Ref ProjectName
+
+  ECSLogGroup:
+    # [AWS::Logs::LogGroup - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-logs-loggroup.html)
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/ecs/logs/${ProjectName}-${ECSTaskName}"
+      RetentionInDays: !Ref LogRetentionInDays
+
+    # [AWS::Events::Rule - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-events-rule.html)
+
+  ECSRule:
+    Type: AWS::Events::Rule
+    Properties:
+      Description: "Fargateの起動スケジュール"
+      Name: !Sub "${ProjectName}-${ECSTaskName}-rule"
+      ScheduleExpression: !Sub "cron(${ECSTaskSchedulerPattern})"
+      State: ENABLED
+      Targets:
+        # [AWS::Events::Rule Target - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-target.html)
+        -
+          Arn: {"Fn::ImportValue": !Sub "${ProjectName}-ECSClusterArn"}
+          EcsParameters:
+            # [AWS::Events::Rule EcsParameters - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-ecsparameters.html)
+            LaunchType: FARGATE
+            NetworkConfiguration:
+              AwsVpcConfiguration:
+                # [AWS::Events::Rule AwsVpcConfiguration - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-events-rule-awsvpcconfiguration.html)
+                AssignPublicIp: ENABLED
+                SecurityGroups:
+                  - {"Fn::ImportValue": !Sub "${ProjectName}-SecurityGroupId"}
+                Subnets:
+                  - {"Fn::ImportValue": !Sub "${ProjectName}-SubnetId"}
+            PlatformVersion: !Ref FargatePlatformVersion
+            TaskCount: !Ref ECSTaskCount
+            TaskDefinitionArn: !Ref ECSTaskDefinition
+          Id: "DefaultTarget"
+          RoleArn: {"Fn::ImportValue": !Sub "${ProjectName}-FargateLauncherRoleArn"}
+

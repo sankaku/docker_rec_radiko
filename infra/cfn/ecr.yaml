@@ -1,0 +1,53 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "ECR Repository for docker_rec_radiko_with_fargate"
+
+Parameters:
+  ProjectName:
+    Type: String
+  ProjectNameSnakeCase:
+    Type: String
+  RepositoryName:
+    Type: String
+
+Resources:
+  ECRRepository:
+    # [AWS::ECR::Repository - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecr-repository.html)
+    Type: AWS::ECR::Repository
+    Properties:
+      RepositoryName: !Sub "${ProjectNameSnakeCase}/${RepositoryName}"
+      ImageScanningConfiguration:
+        ScanOnPush: true
+      ImageTagMutability: MUTABLE
+      LifecyclePolicy:
+        # [Lifecycle policies - Amazon ECR](https://docs.aws.amazon.com/AmazonECR/latest/userguide/LifecyclePolicies.html)
+        LifecyclePolicyText: |
+          {
+            "rules": [
+              {
+                "rulePriority": 1,
+                "description": "Keeps only 3 images",
+                "selection": {
+                  "tagStatus": "any",
+                  "countType": "imageCountMoreThan",
+                  "countNumber": 3
+                },
+                "action": {
+                  "type": "expire"
+                }
+              }
+            ]
+          }
+
+
+Outputs:
+
+  OutputRepositoryName:
+    Description: ECR Repository name
+    Value: !Ref ECRRepository
+    Export:
+      Name: !Sub "${ProjectName}-ECRRepositoryName"
+  OutputRepositoryUri:
+    Description: ECR Repository URI
+    Value: !GetAtt ECRRepository.RepositoryUri
+    Export:
+      Name: !Sub "${ProjectName}-ECRRepositoryUri"
