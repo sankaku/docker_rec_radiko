@@ -1,15 +1,15 @@
-FROM python:3.7.4-slim-stretch
+FROM python:3.10.0-slim-bullseye
 
 # locales-all is to avoid perl warnings
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     rtmpdump \
-    swftools \
     libxml2-utils \
     ffmpeg \
     libavcodec-extra \
     wget \
     curl \
-    locales-all
+    locales-all \
+    zip
 
 # Download scripts. Though these files will be overwritten in run.sh, keep here in case they can't be downloaded at runtime.
 ADD https://gist.githubusercontent.com/matchy256/3956266/raw/rec_radiko.sh /usr/local/bin/
@@ -25,8 +25,9 @@ ADD ./run_fargate.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/run_fargate.sh
 
 # AWS CLI
-RUN pip3 install awscli --upgrade
-ENV PATH $PATH:/usr/local/lib/python3.7/site-packages/awscli
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.4.2.zip" -o "awscliv2.zip" \
+    && unzip awscliv2.zip \
+    && ./aws/install
 ## END
 
 ENV TZ Asia/Tokyo

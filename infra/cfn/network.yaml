@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Network for docker_rec_radiko_with_fargate"
+
+Parameters:
+  ProjectName:
+    Type: String
+  VpcCIDR:
+    Type: String
+  SubnetCIDRClock:
+    Type: String
+  RouteDestinationCIDRBlock:
+    Type: String
+    Default: "0.0.0.0/0"
+
+  VpcName:
+    Type: String
+    Default: "Vpc"
+  SubnetName:
+    Type: String
+    Default: "Subnet"
+  SecurityGroupName:
+    Type: String
+    Default: "SecurityGroup"
+  InternetGatewayName:
+    Type: String
+    Default: "Gateway"
+  RouteTableName:
+    Type: String
+    Default: "rt"
+
+Resources:
+
+  Vpc:
+    # [AWS::EC2::VPC - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-vpc.html)
+    Type: AWS::EC2::VPC
+    Properties:
+      CidrBlock: !Ref VpcCIDR
+      EnableDnsSupport: true
+      EnableDnsHostnames: true
+      InstanceTenancy: default
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}-${VpcName}"
+
+  Subnet:
+    # [AWS::EC2::Subnet - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-subnet.html)
+    Type: AWS::EC2::Subnet
+    Properties:
+      AvailabilityZone: !Select
+        - 0
+        - Fn::GetAZs: !Ref "AWS::Region"
+      CidrBlock: !Ref SubnetCIDRClock
+      MapPublicIpOnLaunch: true
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}/${SubnetName}"
+      VpcId: !Ref Vpc
+
+  SecurityGroup:
+    # [AWS::EC2::SecurityGroup - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-properties-ec2-security-group.html)
+    Type: AWS::EC2::SecurityGroup
+    Properties:
+      GroupName: !Sub "${ProjectName}-${SecurityGroupName}"
+      GroupDescription: !Sub "SecurityGroup for ${ProjectName}"
+      VpcId: !Ref Vpc
+      Tags:
+        -
+          Key: Name
+          Value: !Sub "${ProjectName}/${SecurityGroupName}"
+
+  Gateway:
+    # [AWS::EC2::InternetGateway - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-internetgateway.html)
+    Type: AWS::EC2::InternetGateway
+    Properties:
+      Tags:
+        -
+          Key: Name
+          Value: !Sub "${ProjectName}/${InternetGatewayName}"
+
+  VPCGatewayAttachment:
+    # [AWS::EC2::VPCGatewayAttachment - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-vpc-gateway-attachment.html)
+    Type: AWS::EC2::VPCGatewayAttachment
+    Properties:
+      InternetGatewayId: !Ref Gateway
+      VpcId: !Ref Vpc
+
+  RouteTable:
+    # [AWS::EC2::RouteTable - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-routetable.html)
+    Type: AWS::EC2::RouteTable
+    Properties:
+      VpcId: !Ref Vpc
+      Tags:
+        - Key: Name
+          Value: !Sub "${ProjectName}/${RouteTableName}"
+
+  Route:
+    # [AWS::EC2::Route - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-route.html)
+    Type: AWS::EC2::Route
+    Properties:
+      DestinationCidrBlock: !Ref RouteDestinationCIDRBlock
+      GatewayId: !Ref Gateway
+      RouteTableId: !Ref RouteTable
+
+  SubnetRouteTableAssociation:
+    # [AWS::EC2::SubnetRouteTableAssociation - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ec2-subnet-route-table-assoc.html)
+    Type: AWS::EC2::SubnetRouteTableAssociation
+    Properties:
+      RouteTableId: !Ref RouteTable
+      SubnetId: !Ref Subnet
+
+Outputs:
+
+  OutputVpc:
+    Description: Vpc ID
+    Value: !Ref Vpc
+    Export:
+      Name: !Sub "${ProjectName}-VpcId"
+
+  OutputSubnet:
+    Description: Subnet ID
+    Value: !Ref Subnet
+    Export:
+      Name: !Sub "${ProjectName}-SubnetId"
+
+  OutputSecurityGroup:
+    Description: SecurityGroup ID
+    Value: !Ref SecurityGroup
+    Export:
+      Name: !Sub "${ProjectName}-SecurityGroupId"

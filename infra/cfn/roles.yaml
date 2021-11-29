@@ -1,0 +1,129 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Description: "Roles settings for docker_rec_radiko_with_fargate"
+
+Parameters:
+  ProjectName:
+    Type: String
+
+Resources:
+
+  FargateLauncherRole:
+    # [AWS::IAM::Role - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html#cfn-iam-role-policies)
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-FargateLauncherRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "events.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+
+  FargateExecutorRole:
+    # [AWS::IAM::Role - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html#cfn-iam-role-policies)
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-FargateExecutorRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+
+  ECSTaskRole:
+    # [AWS::IAM::Role - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-role.html#cfn-iam-role-policies)
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "${ProjectName}-ECSTaskRole"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Principal:
+              Service:
+                - "ecs-tasks.amazonaws.com"
+            Action:
+              - "sts:AssumeRole"
+
+  FargateLauncherPolicy:
+    # [AWS::IAM::Policy - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html#cfn-iam-policy-policydocument)
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "${ProjectName}-FargateLauncherPolicy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - "ecs:RunTask"
+              - "iam:PassRole"
+            Resource: "*"
+      Roles:
+        - !Ref FargateLauncherRole
+
+  FargateExecutorPolicy:
+    # [AWS::IAM::Policy - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html#cfn-iam-policy-policydocument)
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "${ProjectName}-FargateExecutorPolicy"
+      PolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          -
+            Effect: "Allow"
+            Action:
+              - "ecr:GetAuthorizationToken"
+              - "ecr:BatchCheckLayerAvailability"
+              - "ecr:GetDownloadUrlForLayer"
+              - "ecr:BatchGetImage"
+              - "logs:CreateLogGroup"
+              - "logs:CreateLogStream"
+              - "logs:PutLogEvents"
+            Resource: "*"
+      Roles:
+        - !Ref FargateExecutorRole
+
+  S3PutterPolicy:
+    # [AWS::IAM::Policy - AWS CloudFormation](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-iam-policy.html#cfn-iam-policy-policydocument)
+    Type: AWS::IAM::Policy
+    Properties:
+      PolicyName: !Sub "${ProjectName}-S3PutterPolicy"
+      PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              -
+                Effect: "Allow"
+                Action:
+                  - "s3:PutObject"
+                Resource: "*"
+      Roles:
+        - !Ref ECSTaskRole
+Outputs:
+  OutputLauncherRoleArn:
+    Description: "ARN of Fargate Launcher Role"
+    Value: !GetAtt FargateLauncherRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-FargateLauncherRoleArn"
+
+  OutputExecutorRoleArn:
+    Description: "ARN of Fargate Executor Role"
+    Value: !GetAtt FargateExecutorRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-FargateExecutorRoleArn"
+
+  OutputTaskRoleArn:
+    Description: "ARN of Fargate Executor Role"
+    Value: !GetAtt ECSTaskRole.Arn
+    Export:
+      Name: !Sub "${ProjectName}-ECSTaskRoleArn"

@@ -1,1 +1,5 @@
-cf/tasks
+infra/sh/constants.txt
+
+infra/sh/tasks/*
+!infra/sh/tasks/task.template.sh
+
