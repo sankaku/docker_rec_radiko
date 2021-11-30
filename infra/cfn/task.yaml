@@ -15,13 +15,11 @@ Parameters:
     Type: String
   S3BucketName:
     Type: String
-
   ECSTaskCpu:
     Type: Number
-    Default: 256
   ECSTaskMemory:
     Type: Number
-    Default: 512
+
   FargatePlatformVersion:
     Type: String
     Default: LATEST

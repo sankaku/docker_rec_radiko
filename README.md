@@ -33,7 +33,7 @@ $ ./radiko_docker_run.sh <放送局ID> <録音時間(分)> <保存先ディレ�
    `./infra/sh/constants.txt` に定数が定義されているので、必要に応じて変更する。  
    特に変更する可能性が高いのは下記の定数。
    - S3_BUCKET_NAME  
-     これは必ず設定すること。録音したファイルを保存するS3バケット名。
+     これは **必ず設定すること** 。録音したファイルを保存するS3バケット名。あらかじめ作成しておく。
    - VPC_CIDR  
      VPCのIPアドレスの範囲。必要があれば変更する。
    - SUBNET_CIDR_BLOCK  
@@ -81,6 +81,10 @@ ECSタスクは番組ごとに作成する。1つのECSタスクは1つのシェ
    - SCHEDULE_PATTERN_UTC  
      タスクを実行するスケジュールをcronで書く。 **UTCで書くこと。**  
      書き方は[ここ](https://docs.aws.amazon.com/ja_jp/AmazonCloudWatch/latest/events/ScheduledEvents.html#CronExpressions)を参照。
+   - ECS_TASK_CPU  
+     CPU。最低限に設定してあるので、もし足りない場合は変える。値は[ここ](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-taskdefinition.html#cfn-ecs-taskdefinition-cpu)参照。
+   - ECS_TASK_MEMORY  
+     メモリ。最低限に設定してあるので、もし足りない場合は変える。値は[ここ](https://docs.aws.amazon.com/AWSCloudFormation/latest/UserGuide/aws-resource-ecs-taskdefinition.html#cfn-ecs-taskdefinition-memory)参照。
 1. ECSタスクを作成  
    ```sh
    ./infra/sh/tasks/my_program.sh
