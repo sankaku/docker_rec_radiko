@@ -1,4 +1,4 @@
-FROM python:3.10.0-slim-bullseye
+FROM python:3.13.2-slim-bookworm
 
 # locales-all is to avoid perl warnings
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
@@ -12,11 +12,10 @@ RUN apt-get update && apt-get -y upgrade && apt-get -y install \
     zip
 
 # Download scripts. Though these files will be overwritten in run.sh, keep here in case they can't be downloaded at runtime.
-ADD https://gist.githubusercontent.com/matchy256/3956266/raw/rec_radiko.sh /usr/local/bin/
-ADD https://gist.githubusercontent.com/matchy256/9515cecbea40918add594203dc61406c/raw/rec_nhk.sh /usr/local/bin/
-RUN chmod +x /usr/local/bin/rec_radiko.sh /usr/local/bin/rec_nhk.sh
+RUN curl https://raw.githubusercontent.com/uru2/radish/refs/heads/master/radi.sh -o /usr/local/bin/rec_radiko.sh
+RUN chmod +x /usr/local/bin/rec_radiko.sh
 
-ADD ./run.sh /usr/local/bin/
+COPY ./run.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/run.sh
 
 # You can remove the lines below if you don't use Fargate
@@ -25,7 +24,7 @@ ADD ./run_fargate.sh /usr/local/bin/
 RUN chmod +x /usr/local/bin/run_fargate.sh
 
 # AWS CLI
-RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64-2.4.2.zip" -o "awscliv2.zip" \
+RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" \
     && unzip awscliv2.zip \
     && ./aws/install
 ## END
