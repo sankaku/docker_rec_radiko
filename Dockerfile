@@ -2,6 +2,7 @@ FROM python:3.13.2-slim-bookworm
 
 # locales-all is to avoid perl warnings
 RUN apt-get update && apt-get -y upgrade && apt-get -y install \
+    jq \
     rtmpdump \
     libxml2-utils \
     ffmpeg \
