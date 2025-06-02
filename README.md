@@ -1,6 +1,10 @@
 # docker_rec_radiko
 [rec_radiko.sh](https://gist.github.com/matchy256/3956266)と[rec_nhk.sh](https://gist.github.com/matchy256/5310409)の力を借りて[radiko.jp](http://radiko.jp)を録音する。
 
+-> 2025年4月に[radish](https://github.com/uru2/radish)に移行。
+現在のリポジトリの内容でdocker buildして、ECRリポジトリのDockerイメージをそれと置き換えれば、他の設定はそのままで使えるはず。
+
+
 ## 必要なもの
 + Docker
 + 場所(日本)
@@ -93,6 +97,7 @@ ECSタスクは番組ごとに作成する。1つのECSタスクは1つのシェ
 ## Acknowledgements
 + [matchy256/rec_radiko.sh](https://gist.github.com/matchy256/3956266)
 + [matchy256/rec_nhk.sh](https://gist.github.com/matchy256/5310409)
++ [uru2/radish](https://github.com/uru2/radish)
 
 ## License
 MIT License
